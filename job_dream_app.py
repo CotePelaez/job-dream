@@ -3,6 +3,24 @@ from openai import OpenAI
 import PyPDF2
 import os
 
+
+button_style = """
+    <style>
+    div.stButton > button {
+        width: 100%;
+        height: 60px;
+        background-color: #FFA07A;
+        color: white;
+        font-size: 20px;
+        border-radius: 10px;
+        border: none;
+    }
+    </style>
+    """
+
+# Inyectar el CSS en la app
+st.markdown(button_style, unsafe_allow_html=True)
+
 # URL de la imagen
 image_url = "fondo.jpeg"
 image_solution = "tuanalisis.jpeg"
@@ -35,13 +53,15 @@ def read_pdf(uploaded_file):
 cv_file = st.file_uploader('Sube tu CV (PDF, DOCX, etc.)', type=['txt', 'pdf', 'docx', 'doc', 'odt'])
 job_file = st.file_uploader('Sube la oferta de trabajo (PDF, DOCX, etc.)', type=['txt', 'pdf', 'docx', 'doc', 'odt'])
 
+
 # Verificar si ambos archivos han sido cargados
 if cv_file and job_file:
     # Leer los archivos usando PyPDF2 (aquí podrías agregar soporte para otros tipos de archivos)
     cv_text = read_pdf(cv_file)
     job_text = read_pdf(job_file)
 
-    if cv_text and job_text:
+
+    if ((cv_text) and (job_text)):
         # Mostrar los primeros 1000 caracteres del CV y la oferta de trabajo para verificar su contenido
         #st.subheader('Texto extraído del Currículum:')
         #st.text(cv_text[:100])  # Muestra los primeros 1000 caracteres
@@ -79,22 +99,21 @@ if cv_file and job_file:
 
     
             """
-
             # Llamada a la API de OpenAI
             try:
-                client = OpenAI(api_key= openai_api_key)    
-                respuesta = client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    max_tokens=4000,  # Ajustar el límite de tokens según la necesidad
-                    temperature=0.4,
-                    messages=[{'role': 'user', 'content': prompt}]
-                )
-                assesment = respuesta.choices[0].message.content
-                # Mostrar el análisis
-                st.image(image_solution, use_column_width=True)
-                st.subheader("Aquí va el análisis hecho por la IA:")
-                st.write(assesment)
-
+                if st.button("Realizar análisis"):
+                    client = OpenAI(api_key= openai_api_key)    
+                    respuesta = client.chat.completions.create(
+                        model="gpt-3.5-turbo",
+                        max_tokens=4000,  # Ajustar el límite de tokens según la necesidad
+                        temperature=0.4,
+                        messages=[{'role': 'user', 'content': prompt}]
+                    )
+                    assesment = respuesta.choices[0].message.content
+                    # Mostrar el análisis
+                    st.image(image_solution, use_column_width=True)
+                    st.subheader("Aquí va el análisis hecho por la IA:")
+                    st.write(assesment)
             except Exception as e:
                 st.error(f"Error al llamar a la API de OpenAI: {e}")
         else:
